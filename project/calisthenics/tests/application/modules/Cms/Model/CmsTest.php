@@ -11,6 +11,11 @@ class Cms_Model_CmsTest extends PHPUnit_Extensions_Database_TestCase
 
     public function setUp()
     {
+        $adapter = Zend_Db_Table::getDefaultAdapter();
+        $adapter->exec('SET FOREIGN_KEY_CHECKS=0');
+        parent::setUp();
+        $adapter->exec('SET FOREIGN_KEY_CHECKS=1');
+
         $this->model = new Cms_Model_Cms();
     }
 
@@ -231,23 +236,5 @@ class Cms_Model_CmsTest extends PHPUnit_Extensions_Database_TestCase
 
         $this->assertEquals($expectedIds, $resultIds);
         $this->assertEquals($expectedFkStores, $resultFkStores);
-    }
-
-    public function testShouldGetBrands()
-    {
-        $expectedBrands = array(
-            array(
-                DbTable_Catalog_BrandRow::ID_CATALOG_BRAND => 1,
-                DbTable_Catalog_BrandRow::NAME => 'Brand One'
-            ),
-            array(
-                DbTable_Catalog_BrandRow::ID_CATALOG_BRAND => 2,
-                DbTable_Catalog_BrandRow::NAME => 'Brand Two'
-            )
-        );
-
-        $foundBrands = $this->model->getBrands();
-
-        $this->assertEquals($expectedBrands, $foundBrands);
     }
 }
