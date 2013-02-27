@@ -11,8 +11,6 @@ class Cms_Model_CmsTest extends PHPUnit_Extensions_Database_TestCase
 
     public function setUp()
     {
-        parent::setUp();
-
         $this->model = new Cms_Model_Cms();
     }
 
