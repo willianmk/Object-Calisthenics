@@ -5,7 +5,4 @@
          convertWarningsToExceptions="true"
          stopOnError="true"
         >
-    <testsuite name="Precision Tests">
-    <directory>./</directory>
-    </testsuite>
 </phpunit>
