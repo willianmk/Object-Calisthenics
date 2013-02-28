@@ -6,6 +6,23 @@
  */
 class Cms_Model_Cms
 {
+    private $folderTable;
+
+    function __construct()
+    {
+        $this->setFolderTable(new DbTable_Cms_FolderTable());
+    }
+
+    public function setFolderTable($folderTable)
+    {
+        $this->folderTable = $folderTable;
+    }
+
+    public function getFolderTable()
+    {
+        return $this->folderTable;
+    }
+
 
     /**
      * Returns the folder with the given db id (=id_cms_folder) and all its items.
@@ -16,8 +33,7 @@ class Cms_Model_Cms
      */
     public function getFolderById($id)
     {
-        $table = new DbTable_Cms_FolderTable();
-        $folder = $table->find($id)->current();
+        $folder = $this->getFolderTable()->find($id)->current();
 
         if (!$folder) {
             return array();
@@ -37,16 +53,14 @@ class Cms_Model_Cms
      */
     public function getActiveFolders($storeId = null)
     {
-        $table = new DbTable_Cms_FolderTable();
-
-        $select = $table->select()->where('cms_folder.is_active = 1')->where('cms_folder.is_confirmed = 1')
+        $select = $this->getFolderTable()->select()->where('cms_folder.is_active = 1')->where('cms_folder.is_confirmed = 1')
             ->order('fk_store_store');
 
         if (null !== $storeId) {
             $select->where('cms_folder.fk_store_store = ?', $storeId);
         }
 
-        return $table->fetchAll($select);
+        return $this->getFolderTable()->fetchAll($select);
     }
 
     /**
@@ -57,8 +71,7 @@ class Cms_Model_Cms
      */
     public function getActiveFoldersSelect($store, $drafts = false, $shopId = 1)
     {
-        $table = new DbTable_Cms_FolderTable();
-        $select = $table->getAdapter()->select();
+        $select = $this->getFolderTable()->getAdapter()->select();
         $selectedTables = array(
             'cms_folder.id_cms_folder',
             'cms_folder.key',
@@ -66,7 +79,7 @@ class Cms_Model_Cms
             'cms_folder.revision',
             'cms_folder.created_at'
         );
-        $select->from($table->getName(), $selectedTables)
+        $select->from($this->getFolderTable()->getName(), $selectedTables)
             ->join('cms_folder_type', 'cms_folder.fk_cms_folder_type = cms_folder_type.id_cms_folder_type', null)
             ->where('cms_folder.is_active = ?', 1)->where('cms_folder.fk_store_store = ?', $store)
             ->where('cms_folder.fk_cms_shop = ?', $shopId)
@@ -98,8 +111,7 @@ class Cms_Model_Cms
             $shopId = null,
             $storeId = null)
     {
-        $table = new DbTable_Cms_FolderTable();
-        $select = $table->select();
+        $select = $this->getFolderTable()->select();
 
         if (!$shopId) {
             $shopId = 1;
@@ -115,7 +127,7 @@ class Cms_Model_Cms
             $select->where('is_active = ?', 1);
         }
 
-        $folders = $table->fetchAll($select);
+        $folders = $this->getFolderTable()->fetchAll($select);
 
         return (empty($folders)) ? array() : $folders->toArray();
     }
@@ -129,13 +141,12 @@ class Cms_Model_Cms
      */
     public function getFolderByKeyAndRevision($key, $revision, $storeId = 1)
     {
-        $table = new DbTable_Cms_FolderTable();
 
-        $sql = $table->select()
+        $sql = $this->getFolderTable()->select()
             ->where('cms_folder.key = ?', $key)
             ->where('cms_folder.revision = ?', $revision)
             ->where('cms_folder.fk_store_store = ?', $storeId);
-        $folder = $table->fetchRow($sql);
+        $folder = $this->getTable()->fetchRow($sql);
 
         if (count($folder)) {
             $folderArr = $folder->toArray();
@@ -155,10 +166,8 @@ class Cms_Model_Cms
      */
     public function getFolderByKey($key)
     {
-        $table = new DbTable_Cms_FolderTable();
-
-        $sql = $table->select()->where('cms_folder.key = ?', $key)->order('revision DESC')->limit(1, 0);
-        $folder = $table->fetchRow($sql);
+        $sql = $this->getFolderTable()->select()->where('cms_folder.key = ?', $key)->order('revision DESC')->limit(1, 0);
+        $folder = $this->getFolderTable()->fetchRow($sql);
 
         if (count($folder)) {
             $folderArr = $folder->toArray();
@@ -167,33 +176,6 @@ class Cms_Model_Cms
         } else {
             return false;
         }
-    }
-
-    /**
-     * Gets all Values for a specific Attribute by Attribute-ID (e.g. brand -> adidas,nike,...)
-     *
-     * @return array
-     */
-    public function getAttributes()
-    {
-        $resultArray = array();
-        $table = new DbTable_Catalog_AttributeTable();
-        $select = $table->select()->order('label ASC');
-        $select->where(DbTable_Catalog_AttributeRow::SOLR_FILTER . ' IS NOT NULL');
-        $select->where(DbTable_Catalog_AttributeRow::ATTRIBUTE_TYPE . ' in ("option","multi_option")');
-        $select->group(DbTable_Catalog_AttributeRow::NAME);
-
-        $rows = $table->fetchAllToArray($select);
-
-        foreach ($rows as $row) {
-            $resultArray[] = array(
-                'id'    => $row[DbTable_Catalog_AttributeRow::ID_CATALOG_ATTRIBUTE],
-                'name'  => $row[DbTable_Catalog_AttributeRow::NAME],
-                'label' => $row[DbTable_Catalog_AttributeRow::LABEL]
-            );
-        }
-
-        return $resultArray;
     }
 
     /**
@@ -227,40 +209,6 @@ class Cms_Model_Cms
         $key = strtr(Utils_Translit::t($key), " ", "_");
 
         return $key;
-    }
-
-    /**
-     * Returns an Array with all available folder types
-     *
-     * @return array
-     */
-    public function getFolderTypes()
-    {
-        $folderTypeTable = new DbTable_Cms_Folder_TypeTable();
-        $folderTypes = array();
-
-        foreach ($folderTypeTable->fetchAll() as $folderType) {
-            $folderTypes[$folderType[DbTable_Cms_Folder_TypeRow::ID_CMS_FOLDER_TYPE]] = $folderType->toArray();
-        }
-
-        return $folderTypes;
-    }
-
-    /**
-     * Returns an Array with all available item types
-     *
-     * @return array
-     */
-    public function getItemTypes()
-    {
-        $itemTypeTable = new DbTable_Cms_Item_TypeTable();
-        $itemTypes = array();
-
-        foreach ($itemTypeTable->fetchAll() as $itemType) {
-            $itemTypes[$itemType[DbTable_Cms_Item_TypeRow::ID_CMS_ITEM_TYPE]] = $itemType->toArray();
-        }
-
-        return $itemTypes;
     }
 
 }
