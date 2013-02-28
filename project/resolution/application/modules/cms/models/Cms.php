@@ -8,77 +8,6 @@ class Cms_Model_Cms
 {
 
     /**
-     * Returns the directory where cms images are stored (creat if not existing)
-     * @return string directory name
-     */
-    static public function getCmsDirectory($parameter = false)
-    {
-        $bootstrap = Zend_Controller_Front::getInstance()->getParam('bootstrap');
-
-        $option = $bootstrap->getOption('catalog');
-
-        if (substr($option['image_directory'], -1, 1) != '/') {
-            $option['image_directory'] .= '/';
-        }
-
-        if ($parameter === false) {
-            $dir = $option['image_directory'] . 'cms/';
-        } else {
-            $dir = $option['image_directory'] . $parameter;
-        }
-
-        if (!is_dir($dir)) {
-            mkdir($dir, 0777, true);
-        }
-
-        return $dir;
-    }
-
-    /**
-     * Returns the base url for images and brands
-     * @return string
-     */
-    static public function getBaseUrl()
-    {
-        $bootstrap = Zend_Controller_Front::getInstance()->getParam('bootstrap');
-        $option = $bootstrap->getOption('catalog');
-
-        if (substr($option['image_base_url'], -1, 1) != '/') {
-            $option['image_base_url'] .= '/';
-        }
-
-        return $option['image_base_url'] . 'cms/';
-    }
-
-    /**
-     * Returns the base url for images and brands without ending with cms
-     * @return string
-     */
-    static public function getMediaHost()
-    {
-        $bootstrap = Zend_Controller_Front::getInstance()->getParam('bootstrap');
-        $option = $bootstrap->getOption('catalog');
-
-        if (substr($option['image_base_url'], -1, 1) != '/') {
-            $option['image_base_url'] .= '/';
-        }
-
-        return $option['image_base_url'];
-    }
-
-    static public function getAliceUrl()
-    {
-        $bootstrap = Zend_Controller_Front::getInstance()->getParam('bootstrap');
-        $option = $bootstrap->getOption('resources');
-
-        if (!isset($option['frontController']['absoluteURLAlice'])) {
-            die('Please define resources.frontController.absoluteURLAlice in your application.ini!');
-        }
-
-        return $option['frontController']['absoluteURLAlice'];
-    }
-
-    /**
      * Returns the folder with the given db id (=id_cms_folder) and all its items.
      *
      * @param int $id The id of the folder.
@@ -156,7 +85,6 @@ class Cms_Model_Cms
 
     /**
      * Gets Folders by combination of key and folderType
-     * @todo make better db request
      *
      * @param string $key
      * @param int $folderType
@@ -276,8 +204,6 @@ class Cms_Model_Cms
      */
     public function buildFolderKey($data)
     {
-        // TODO: implement missing folderTypes
-        // TODO: use strings from folder type table
         $folderType = $data[DbTable_Cms_FolderRow::FK_CMS_FOLDER_TYPE];
 
         $key = null;
@@ -299,55 +225,6 @@ class Cms_Model_Cms
         }
 
         $key = strtr(Utils_Translit::t($key), " ", "_");
-
-        return $key;
-    }
-
-    /**
-     * Building key for catalog-listing-page from attribute/category combination
-     *
-     * @param array $data
-     * @return string
-     */
-    protected function _buildFolderKeyForCatalog($data)
-    {
-        $key = '';
-        $brand = '';
-        $category = '';
-        $attributes = array();
-
-        foreach ($data as $inputKey => $value) {
-            $parts = explode('_', $inputKey);
-
-            if (count($parts) > 0 && 'attr' == $parts[0]) {
-                $attributes[$value] = $data['attrVal_' . $parts[1]];
-
-            } elseif (count($parts) > 0 && 'cat' == $parts[0]) {
-                $category = str_replace(" ", "_", $value);
-
-            } elseif (count($parts) > 0 && 'brand' == $parts[0]) {
-                $brand = str_replace(" ", "_", $value);
-            }
-        }
-
-        ksort($attributes);
-
-        if (!empty($category)) {
-            $key = 'category:' . $category;
-        }
-
-        if (!empty($brand)) {
-            $key .= ($key == '') ? '' : '__';
-
-            $key .= 'brand:' . $brand;
-        }
-
-        foreach ($attributes as $attrKey => $attrVal) {
-            if (!empty($key)) {
-                $key .= '__';
-            }
-            $key .= $attrKey . ':' . $attrVal;
-        }
 
         return $key;
     }
@@ -386,45 +263,4 @@ class Cms_Model_Cms
         return $itemTypes;
     }
 
-    /**
-     * Returns an Array with all PreSets for Folder-Item-Configuration (default fields on creating new)
-     *
-     * @return array
-     */
-    public function getFolderPresets()
-    {
-        $presets = array(
-            1   => array(
-                "foldertype"=> 1,
-                "itemIds"   => array(1, 2, 3, 4, 5, 6, 8, 9)
-            ),
-            2   => array(
-                "foldertype"=> 2,
-                "itemIds"   => array(1, 2, 3, 4, 5, 6, 8, 9)
-            ),
-            //3   => array("foldertype"=>3, "itemIds"=>array(6)),
-            //4   => array("foldertype"=>4, "itemIds"=>array(6)),
-            //5   => array("foldertype"=>5, "itemIds"=>array(6)),
-            3   => array(
-                "foldertype"=> 3,
-                "itemIds"   => array(1, 3, 4, 6)
-            ),
-            //7   => array("foldertype"=>7, "itemIds"=>array(6)),
-            4   => array(
-                "foldertype"=> 4,
-                "itemIds"   => array(2)
-            ),
-            //9   => array("foldertype"=>9, "itemIds"=>array(6)),
-            5   => array(
-                "foldertype"=> 5,
-                "itemIds"   => array(10)
-            ),
-            6   => array(
-                "foldertype"=> 6,
-                "itemIds"   => array(19, 20, 6, 18, 13, 16)
-            ),
-        );
-
-        return $presets;
-    }
 }
