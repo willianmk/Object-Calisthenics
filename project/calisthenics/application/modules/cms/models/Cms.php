@@ -6,19 +6,6 @@
  */
 class Cms_Model_Cms
 {
-    /**
-     * get id and names of brands
-     * @return array brand_id=>brand_name
-     */
-    public function getBrands()
-    {
-        $brandService = new Catalog_Service_Brand;
-        $brands = $brandService->getBrands();
-
-        $return = $this->extractCmsBrandData($brands);
-
-        return $return;
-    }
 
     /**
      * Returns the directory where cms images are stored (creat if not existing)

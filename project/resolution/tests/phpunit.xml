@@ -1,0 +1,11 @@
+<phpunit bootstrap="bootstrap.php"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         stopOnError="true"
+        >
+    <testsuite name="Precision Tests">
+    <directory>./</directory>
+    </testsuite>
+</phpunit>
