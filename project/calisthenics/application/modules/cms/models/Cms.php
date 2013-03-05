@@ -23,7 +23,6 @@ class Cms_Model_Cms
         return $this->folderTable;
     }
 
-
     /**
      * Returns the folder with the given db id (=id_cms_folder) and all its items.
      *
@@ -146,7 +145,8 @@ class Cms_Model_Cms
             ->where('cms_folder.key = ?', $key)
             ->where('cms_folder.revision = ?', $revision)
             ->where('cms_folder.fk_store_store = ?', $storeId);
-        $folder = $this->getTable()->fetchRow($sql);
+        $folder = $this->getFolderTable()->fetchRow($sql);
+        $folder = $this->getFolderTable()->fetchRow($sql);
 
         if (count($folder)) {
             $folderArr = $folder->toArray();

@@ -2,6 +2,9 @@
 
 class Cms_Model_CmsTest extends PHPUnit_Extensions_Database_TestCase
 {
+    /**
+     * @var Cms_Model_Cms
+     */
     private $model;
 
     protected function getConnection()
@@ -236,5 +239,28 @@ class Cms_Model_CmsTest extends PHPUnit_Extensions_Database_TestCase
 
         $this->assertEquals($expectedIds, $resultIds);
         $this->assertEquals($expectedFkStores, $resultFkStores);
+    }
+
+    /**
+     * @dataProvider providerFolderIdsForEmptyResult
+     * @param $folderId
+     */
+    public function testGetFolderByIdShouldReturnEmpty($folderId)
+    {
+        $result = $this->model->getFolderById($folderId);
+        $this->assertEmpty($result);
+    }
+
+    public function providerFolderIdsForEmptyResult(){
+        return array(
+            array(null),
+            array(0),
+            array(''),
+            array('0'),
+            array(999999999999999),
+            array(0.0),
+            array(00.0),
+            array('test')
+        );
     }
 }
