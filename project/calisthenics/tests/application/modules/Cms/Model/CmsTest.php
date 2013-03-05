@@ -263,4 +263,36 @@ class Cms_Model_CmsTest extends PHPUnit_Extensions_Database_TestCase
             array('test')
         );
     }
+
+    /**
+     * dataProvider providerFolderIdsForNonEmptyResult
+     */
+    public function testGetFolderByIdShoudReturnResults()
+    {
+        $expected = array(
+            'id_cms_folder' => '1',
+            'fk_cms_folder_type' => '1',
+            'fk_acl_user' => '1',
+            'key' => 'homepage',
+            'description' => 'description',
+            'is_active' => '1',
+            'revision' => '1',
+            'created_at' => '2012-04-04 11:23:53',
+            'is_confirmed' => '1',
+            'fk_cms_shop' => '1',
+            'fk_store_store' => '1',
+            'items' => array(
+                <column>id_cms_item</column>
+    <column>fk_cms_folder</column>
+    <column>fk_cms_item_type</column>
+    <column>fk_acl_user</column>
+    <column>content</column>
+    <column>created_at</column>
+            )
+        );
+
+        $result = $this->model->getFolderById(1);
+        $this->assertEquals($expected, $result);
+    }
+
 }
