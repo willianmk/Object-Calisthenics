@@ -146,7 +146,6 @@ class Cms_Model_Cms
             ->where('cms_folder.revision = ?', $revision)
             ->where('cms_folder.fk_store_store = ?', $storeId);
         $folder = $this->getFolderTable()->fetchRow($sql);
-        $folder = $this->getFolderTable()->fetchRow($sql);
 
         if (count($folder)) {
             $folderArr = $folder->toArray();
@@ -192,13 +191,11 @@ class Cms_Model_Cms
 
         switch ($folderType) {
             case 1:
-                // home page
                 $key = 'homepage';
                 break;
 
             case 3:
-                // catalog listing page
-                $key = $this->_buildFolderKeyForCatalog($data);
+                $key = $data[DbTable_Cms_FolderRow::DESCRIPTION];
                 break;
 
             default:
@@ -206,7 +203,7 @@ class Cms_Model_Cms
                 break;
         }
 
-        $key = strtr(Utils_Translit::t($key), " ", "_");
+        $key = strtr($key, " ", "_");
 
         return $key;
     }
