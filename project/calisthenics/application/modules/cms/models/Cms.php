@@ -23,7 +23,6 @@ class Cms_Model_Cms
         return $this->folderTable;
     }
 
-
     /**
      * Returns the folder with the given db id (=id_cms_folder) and all its items.
      *
@@ -124,8 +123,7 @@ class Cms_Model_Cms
             $shopId = null,
             $storeId = null)
     {
-        $select = $this->getFolderTable()
-            ->select();
+        $select = $this->getFolderTable()->select();
 
         if (!$shopId) {
             $shopId = 1;
@@ -219,13 +217,11 @@ class Cms_Model_Cms
 
         switch ($folderType) {
             case 1:
-                // home page
                 $key = 'homepage';
                 break;
 
             case 3:
-                // catalog listing page
-                $key = $this->_buildFolderKeyForCatalog($data);
+                $key = $data[DbTable_Cms_FolderRow::DESCRIPTION];
                 break;
 
             default:
@@ -233,7 +229,7 @@ class Cms_Model_Cms
                 break;
         }
 
-        $key = strtr(Utils_Translit::t($key), " ", "_");
+        $key = strtr($key, " ", "_");
 
         return $key;
     }
