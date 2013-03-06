@@ -33,16 +33,19 @@ class Cms_Model_Cms
      */
     public function getFolderById($id)
     {
-        $folder = $this->getFolderTable()->find($id)->current();
+        $folder = $this->getFolderTable()
+            ->find($id)
+            ->current();
 
         if (!$folder) {
             return array();
         }
 
-        $folderArr = $folder->toArray();
-        $folderArr['items'] = $folder->findDependentRowset('DbTable_Cms_ItemTable')->toArray();
+        $folderArray = $folder->toArray();
+        $folderArray['items'] = $folder->findDependentRowset('DbTable_Cms_ItemTable')
+            ->toArray();
 
-        return $folderArr;
+        return $folderArray;
     }
 
     /**
@@ -53,14 +56,18 @@ class Cms_Model_Cms
      */
     public function getActiveFolders($storeId = null)
     {
-        $select = $this->getFolderTable()->select()->where('cms_folder.is_active = 1')->where('cms_folder.is_confirmed = 1')
+        $select = $this->getFolderTable()
+            ->select()
+            ->where('cms_folder.is_active = 1')
+            ->where('cms_folder.is_confirmed = 1')
             ->order('fk_store_store');
 
         if (null !== $storeId) {
             $select->where('cms_folder.fk_store_store = ?', $storeId);
         }
 
-        return $this->getFolderTable()->fetchAll($select);
+        return $this->getFolderTable()
+            ->fetchAll($select);
     }
 
     /**
@@ -71,7 +78,10 @@ class Cms_Model_Cms
      */
     public function getActiveFoldersSelect($store, $drafts = false, $shopId = 1)
     {
-        $select = $this->getFolderTable()->getAdapter()->select();
+        $select = $this->getFolderTable()
+            ->getAdapter()
+            ->select();
+
         $selectedTables = array(
             'cms_folder.id_cms_folder',
             'cms_folder.key',
@@ -81,9 +91,12 @@ class Cms_Model_Cms
         );
         $select->from($this->getFolderTable()->getName(), $selectedTables)
             ->join('cms_folder_type', 'cms_folder.fk_cms_folder_type = cms_folder_type.id_cms_folder_type', null)
-            ->where('cms_folder.is_active = ?', 1)->where('cms_folder.fk_store_store = ?', $store)
+            ->where('cms_folder.is_active = ?', 1)
+            ->where('cms_folder.fk_store_store = ?', $store)
             ->where('cms_folder.fk_cms_shop = ?', $shopId)
-            ->joinLeft('cms_item', 'cms_item.fk_cms_folder = cms_folder.id_cms_folder', null)->group('cms_folder.key');
+            ->joinLeft('cms_item', 'cms_item.fk_cms_folder = cms_folder.id_cms_folder', null)
+            ->group('cms_folder.key');
+
         $conditionConfirmed = 1;
 
         if ($drafts) {
@@ -111,25 +124,34 @@ class Cms_Model_Cms
             $shopId = null,
             $storeId = null)
     {
-        $select = $this->getFolderTable()->select();
+        $select = $this->getFolderTable()
+            ->select();
 
         if (!$shopId) {
             $shopId = 1;
         }
+
         if (!$storeId) {
             $storeId = 1;
         }
 
-        $select->where('cms_folder.key = ?', $key)->where('cms_folder.fk_store_store = ?', $storeId)
-            ->where('cms_folder.' . DbTable_Cms_FolderRow::FK_CMS_SHOP . ' = ?', $shopId)->order('created_at DESC');
+        $select->where('cms_folder.key = ?', $key)
+            ->where('cms_folder.fk_store_store = ?', $storeId)
+            ->where('cms_folder.' . DbTable_Cms_FolderRow::FK_CMS_SHOP . ' = ?', $shopId)
+            ->order('created_at DESC');
 
         if (!$withHistory) {
             $select->where('is_active = ?', 1);
         }
 
-        $folders = $this->getFolderTable()->fetchAll($select);
+        $folders = $this->getFolderTable()
+            ->fetchAll($select);
 
-        return (empty($folders)) ? array() : $folders->toArray();
+        if (empty($folders)) {
+            return array();
+        }
+
+        return $folders->toArray();
     }
 
     /**
@@ -146,16 +168,19 @@ class Cms_Model_Cms
             ->where('cms_folder.key = ?', $key)
             ->where('cms_folder.revision = ?', $revision)
             ->where('cms_folder.fk_store_store = ?', $storeId);
-        $folder = $this->getTable()->fetchRow($sql);
+
+        $folder = $this->getFolderTable()
+            ->fetchRow($sql);
 
         if (count($folder)) {
-            $folderArr = $folder->toArray();
-            $folderArr['items'] = $folder->findDependentRowset('DbTable_Cms_ItemTable')->toArray();
-            return $folderArr;
-
-        } else {
-            return false;
+            $folderArray = $folder->toArray();
+            $folderArray['items'] = $folder->findDependentRowset('DbTable_Cms_ItemTable')
+                ->toArray();
+            return $folderArray;
         }
+        
+        return false;
+        
     }
 
     /**
@@ -166,16 +191,18 @@ class Cms_Model_Cms
      */
     public function getFolderByKey($key)
     {
-        $sql = $this->getFolderTable()->select()->where('cms_folder.key = ?', $key)->order('revision DESC')->limit(1, 0);
-        $folder = $this->getFolderTable()->fetchRow($sql);
+        $folderTable = $this->getFolderTable();
+        $sql = $folderTable->select()
+            ->where('cms_folder.key = ?', $key)
+            ->order('revision DESC')
+            ->limit(1, 0);
+        $folder = $folderTable->fetchRow($sql);
 
         if (count($folder)) {
-            $folderArr = $folder->toArray();
-            return $folderArr;
-
-        } else {
-            return false;
-        }
+            return $folder->toArray();
+        } 
+        
+        return false;
     }
 
     /**

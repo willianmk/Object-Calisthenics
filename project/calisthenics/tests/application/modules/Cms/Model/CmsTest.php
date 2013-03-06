@@ -237,4 +237,26 @@ class Cms_Model_CmsTest extends PHPUnit_Extensions_Database_TestCase
         $this->assertEquals($expectedIds, $resultIds);
         $this->assertEquals($expectedFkStores, $resultFkStores);
     }
+
+    public function testGetFolderByKeyWithInvalidKey()
+    {   
+        $key = 'key';
+        $result =  $this->model->getFolderByKey($key);
+        $expected = false;
+        $this->assertEquals($expected , $result );
+    }
+
+    public function testGetFolderByKeyWithValidKey()
+    {   
+        $key = 'google_analytics';
+        $result =  $this->model->getFolderByKey($key);
+        $this->assertTrue(is_array($result));
+    }
+
+    public function testGetFolderByKeyWithValidKeyShouldReturnIdCorrect()
+    {   
+        $key = 'google_analytics';
+        $result =  $this->model->getFolderByKey($key);
+        $this->assertEquals(8, $result['id_cms_folder']);
+    }   
 }
