@@ -30,18 +30,18 @@ class Cms_Model_Cms
      * @return array|Bob_Api_Result_Failed_WithError
      * Either an error object or an array which holds the folders properties and items.
      */
-    public function getFolderById($id)
+    public function getFolderById(Cms_Model_Folder $folder)
     {
-        $folder = $this->getFolderTable()
-            ->find($id)
+        $folderTable = $this->getFolderTable()
+            ->find($folder->getId())
             ->current();
 
-        if (!$folder) {
+        if (!$folderTable) {
             return array();
         }
 
-        $folderArray = $folder->toArray();
-        $folderArray['items'] = $folder->findDependentRowset('DbTable_Cms_ItemTable')
+        $folderArray = $folderTable->toArray();
+        $folderArray['items'] = $folderTable->findDependentRowset('DbTable_Cms_ItemTable')
             ->toArray();
 
         return $folderArray;
@@ -53,7 +53,7 @@ class Cms_Model_Cms
      * @return array|Bob_Api_Result_Failed_WithError
      * Either an error object or an array which holds the folders properties and items.
      */
-    public function getActiveFolders($storeId = null)
+    public function getActiveFolders(Cms_Model_Store $store)
     {
         $select = $this->getFolderTable()
             ->select()
@@ -61,8 +61,8 @@ class Cms_Model_Cms
             ->where('cms_folder.is_confirmed = 1')
             ->order('fk_store_store');
 
-        if (null !== $storeId) {
-            $select->where('cms_folder.fk_store_store = ?', $storeId);
+        if (null !== $store->getId()) {
+            $select->where('cms_folder.fk_store_store = ?', $store->getId());
         }
 
         return $this->getFolderTable()
@@ -75,7 +75,7 @@ class Cms_Model_Cms
      * @param integer $shopId Specify ID of shop
      * @return $select //Zend_Db_Select
      */
-    public function getActiveFoldersSelect($store, $drafts = false, $shopId = 1)
+    public function getActiveFoldersSelect(Cms_Model_Store $store, Cms_Model_Folder $folder, Cms_Model_Shop $shop)
     {
         $select = $this->getFolderTable()
             ->getAdapter()
@@ -91,18 +91,12 @@ class Cms_Model_Cms
         $select->from($this->getFolderTable()->getName(), $selectedTables)
             ->join('cms_folder_type', 'cms_folder.fk_cms_folder_type = cms_folder_type.id_cms_folder_type', null)
             ->where('cms_folder.is_active = ?', 1)
-            ->where('cms_folder.fk_store_store = ?', $store)
-            ->where('cms_folder.fk_cms_shop = ?', $shopId)
+            ->where('cms_folder.fk_store_store = ?', $store->getId())
+            ->where('cms_folder.fk_cms_shop = ?', $shop->getId())
             ->joinLeft('cms_item', 'cms_item.fk_cms_folder = cms_folder.id_cms_folder', null)
             ->group('cms_folder.key');
 
-        $conditionConfirmed = 1;
-
-        if ($drafts) {
-            $conditionConfirmed = 0;
-        }
-
-        $select->where('cms_folder.is_confirmed = ?', $conditionConfirmed);
+        $select->where('cms_folder.is_confirmed = ?', $folder->getIsConfirmed());
         $select->order(DbTable_Cms_FolderRow::CREATED_AT . ' DESC');
 
         return $select;

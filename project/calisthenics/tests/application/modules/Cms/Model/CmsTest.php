@@ -63,7 +63,7 @@ class Cms_Model_CmsTest extends PHPUnit_Extensions_Database_TestCase
 
     public function testShouldReturnSelectDefaultParameters()
     {
-        $store = 1;
+        $store = new Cms_Model_Store(1);
 
         $expectedResult = array(array(
             'id_cms_folder' => "1",
@@ -236,7 +236,8 @@ class Cms_Model_CmsTest extends PHPUnit_Extensions_Database_TestCase
 
     public function testShouldGetActiveFolders()
     {
-        $activeFolders = $this->model->getActiveFolders();
+        $store = new Cms_Model_Store(null);
+        $activeFolders = $this->model->getActiveFolders($store);
         $expectedIds = array(1, 4, 8);
         $expectedFkStores = array(1, 2, 2);
         $resultIds = array();
@@ -253,7 +254,8 @@ class Cms_Model_CmsTest extends PHPUnit_Extensions_Database_TestCase
 
     public function testShouldGetActiveFoldersWithIdStore()
     {
-        $activeFolders = $this->model->getActiveFolders(1);
+        $store = new Cms_Model_Store(1);
+        $activeFolders = $this->model->getActiveFolders($store);
         $expectedIds = array(1);
         $resultIds = array();
 
@@ -270,7 +272,8 @@ class Cms_Model_CmsTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testGetFolderByIdWithEmptyResult($folderId)
     {
-        $result = $this->model->getFolderById($folderId);
+        $folder = new Cms_Model_Folder($folderId);
+        $result = $this->model->getFolderById($folder);
         $this->assertEmpty($result);
     }
 
@@ -312,8 +315,8 @@ class Cms_Model_CmsTest extends PHPUnit_Extensions_Database_TestCase
                 )
             )
         );
-
-        $result = $this->model->getFolderById(1);
+        $folder = new Cms_Model_Folder(1);
+        $result = $this->model->getFolderById($folder);
 
         $this->assertEquals($expected, $result);
     }
